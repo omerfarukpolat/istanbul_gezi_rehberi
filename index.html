@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>İstanbul Gezi Çarkı</title>
+  <meta name="description" content="Çarkı çevir, İstanbul'da bugün nereye gideceğine şans karar versin. 128 öneri, 8 kategori.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎡</text></svg>">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>İstanbul Gezi Çarkı</h1>
+    <p>Çarkı çevir, bugünkü rotana şans karar versin — 8 kategori, 128 öneri.</p>
+  </header>
+
+  <main>
+    <div class="wheel-wrap" id="wheelWrap">
+      <svg class="pointer" id="pointer" viewBox="0 0 60 70" aria-hidden="true">
+        <path d="M30 68 L6 14 A26 26 0 1 1 54 14 Z" />
+        <circle cx="30" cy="24" r="9" />
+      </svg>
+      <svg id="wheel" viewBox="0 0 1000 1000" role="img" aria-label="İstanbul gezi önerileri çarkı">
+        <defs>
+          <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="6" result="b" />
+            <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+        </defs>
+        <g id="rotor"></g>
+        <g id="lights"></g>
+      </svg>
+      <button class="hub" id="spinBtn" type="button" aria-label="Çarkı çevir">
+        <span class="hub-label">ÇEVİR</span>
+        <span class="hub-sub">128 Öneri</span>
+      </button>
+    </div>
+
+    <div class="controls">
+      <button id="spinBtn2" class="primary" type="button">🎡 Çarkı Çevir</button>
+      <button id="soundBtn" class="ghost" type="button" aria-pressed="true">🔊 Ses açık</button>
+    </div>
+    <p class="hint">İpucu: Ortadaki düğmeye ya da <kbd>Boşluk</kbd> tuşuna basarak da çevirebilirsin.</p>
+  </main>
+
+  <div class="modal" id="modal" hidden>
+    <div class="card" role="dialog" aria-modal="true" aria-labelledby="resultItem">
+      <div class="card-badge" id="resultIcon">★</div>
+      <p class="card-kicker">🎉 Tebrikler! Bugünkü rotan:</p>
+      <h2 id="resultItem">—</h2>
+      <p class="card-path"><span id="resultCat"></span> › <span id="resultGroup"></span></p>
+      <div class="card-actions">
+        <a id="mapLink" class="ghost" target="_blank" rel="noopener">📍 Haritada aç</a>
+        <button id="againBtn" class="primary" type="button">Tekrar çevir</button>
+      </div>
+      <button class="close" id="closeBtn" type="button" aria-label="Kapat">×</button>
+    </div>
+  </div>
+
+  <canvas id="confetti" aria-hidden="true"></canvas>
+
+  <footer>İstanbul Gezi Rehberi · Çarkı çevir, keşfet</footer>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
