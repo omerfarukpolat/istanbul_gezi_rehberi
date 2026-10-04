@@ -10,13 +10,21 @@
   const R_RIM = 494;        // dış çerçeve
   const LIGHTS = 48;
 
-  const data = window.REHBER;
+  const city = window.SEHIR || "İstanbul";
+  // Öneri ya "Ad" ya da ["Ad", "harita araması"] biçiminde yazılabilir
+  const data = window.REHBER.map((cat) => ({
+    ...cat,
+    groups: cat.groups.map((grp) => ({
+      ...grp,
+      items: grp.items.map((e) => (Array.isArray(e) ? { name: e[0], query: e[1] } : { name: e, query: e }))
+    }))
+  }));
 
   // Tüm önerileri sırayla düzleştir
   const items = [];
   data.forEach((cat, ci) => {
     cat.groups.forEach((grp, gi) => {
-      grp.items.forEach((name) => items.push({ name, ci, gi, cat, grp }));
+      grp.items.forEach((entry) => items.push({ ...entry, ci, gi, cat, grp }));
     });
   });
   const N = items.length;
@@ -68,8 +76,10 @@
     return best.lines;
   }
 
-  // Radyal metin: merkezden dışa doğru okunur, sol yarıda ters çevrilir
-  function radialText(parent, mid, r, lines, cls, anchorMode) {
+  // Radyal metin: merkezden dışa doğru okunur, sol yarıda ters çevrilir.
+  // maxLen verilirse metin, sığması için sonradan küçültülür (fitTexts).
+  const fitList = [];
+  function radialText(parent, mid, r, lines, cls, anchorMode, maxLen) {
     const flip = mid > 180;
     const rot = flip ? mid + 90 : mid - 90;
     const g = el("g", { transform: `rotate(${f(rot)} ${C} ${C})` }, parent);
@@ -84,8 +94,20 @@
         "text-anchor": anchor, "dominant-baseline": "central"
       }, g);
       t.textContent = line;
+      if (maxLen) fitList.push({ t, maxLen });
     });
     return g;
+  }
+
+  function fitTexts() {
+    fitList.forEach(({ t, maxLen }) => {
+      t.style.fontSize = "";
+      const len = t.getComputedTextLength();
+      if (len > maxLen) {
+        const size = parseFloat(getComputedStyle(t).fontSize);
+        t.style.fontSize = (size * maxLen / len).toFixed(2) + "px";
+      }
+    });
   }
 
   // ---------- Çarkı çiz ----------
@@ -104,19 +126,19 @@
     const gNodes = [];
     cat.groups.forEach((grp, gi) => {
       const grpStart = idx * STEP;
-      grp.items.forEach((name) => {
+      grp.items.forEach((entry) => {
         const a0 = idx * STEP;
         const a1 = a0 + STEP;
         const g = el("g", { class: "seg seg-item" }, itemLayer);
         el("path", { d: sector(R_GRP, R_ITEM, a0, a1), fill: cat.light, stroke: "#2b2b2e", "stroke-width": 0.7 }, g);
-        radialText(g, a0 + STEP / 2, R_ITEM - 12, [name], "t-item", "outer");
+        radialText(g, a0 + STEP / 2, R_ITEM - 12, [entry.name], "t-item", "outer", R_ITEM - R_GRP - 24);
         itemNodes.push(g);
         idx++;
       });
       const grpEnd = idx * STEP;
       const g = el("g", { class: "seg seg-grp" }, grpLayer);
       el("path", { d: sector(R_CAT, R_GRP, grpStart, grpEnd), fill: cat.sub, stroke: "#1d1d1f", "stroke-width": 1.6 }, g);
-      radialText(g, (grpStart + grpEnd) / 2, (R_CAT + R_GRP) / 2, twoLines(grp.name), "t-grp", "middle");
+      radialText(g, (grpStart + grpEnd) / 2, (R_CAT + R_GRP) / 2, twoLines(grp.name), "t-grp", "middle", R_GRP - R_CAT - 12);
       gNodes.push(g);
     });
     grpNodes.push(gNodes);
@@ -170,6 +192,9 @@
     .t-icon { font-size: 22px; fill: #fff; }
     .seg-item.win .t-item { font-weight: 800; }
   `;
+  fitTexts();
+  if (document.fonts) document.fonts.ready.then(fitTexts);
+  document.querySelectorAll(".hub-sub").forEach((n) => (n.textContent = N + " Öneri"));
 
   // ---------- Ses ----------
   let audio = null;
@@ -304,7 +329,7 @@
     document.getElementById("resultCat").textContent = it.cat.name;
     document.getElementById("resultGroup").textContent = it.grp.name;
     document.getElementById("mapLink").href =
-      "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(it.name + ", İstanbul");
+      "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(it.query + ", " + city);
     modal.hidden = false;
     document.getElementById("againBtn").focus();
   }
