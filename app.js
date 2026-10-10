@@ -138,7 +138,9 @@
       const grpEnd = idx * STEP;
       const g = el("g", { class: "seg seg-grp" }, grpLayer);
       el("path", { d: sector(R_CAT, R_GRP, grpStart, grpEnd), fill: cat.sub, stroke: "#1d1d1f", "stroke-width": 1.6 }, g);
-      radialText(g, (grpStart + grpEnd) / 2, (R_CAT + R_GRP) / 2, twoLines(grp.name), "t-grp", "middle", R_GRP - R_CAT - 12);
+      const grpLabel = radialText(g, (grpStart + grpEnd) / 2, (R_CAT + R_GRP) / 2, twoLines(grp.name), "t-grp", "middle", R_GRP - R_CAT - 12);
+      // Açık renkli alt kategori halkasında koyu yazı için (isteğe bağlı "ink" alanı)
+      if (cat.ink) grpLabel.querySelectorAll("text").forEach((t) => (t.style.fill = cat.ink));
       gNodes.push(g);
     });
     grpNodes.push(gNodes);
@@ -155,10 +157,16 @@
     const rMid = (R_HUB + R_CAT) / 2 + 2;
     const rows = [{ text: cat.icon, cls: "t-icon", off: -27 }];
     twoLines(cat.name).forEach((line, i) => rows.push({ text: line, cls: "t-cat", off: i * 16 }));
+    const halfRad = ((catEnd - catStart) / 2) * Math.PI / 180;
     rows.forEach((row) => {
       const y = flip ? C + rMid + row.off : C - rMid + row.off;
       const t = el("text", { x: C, y: f(y), class: row.cls, "text-anchor": "middle", "dominant-baseline": "central" }, tg);
       t.textContent = row.text;
+      // Satır, merkeze yakın kenarında dilimin iki sınır çizgisi arasına sığmalı
+      if (row.cls === "t-cat") {
+        const r = Math.abs(y - C) - 6;
+        fitList.push({ t, maxLen: 2 * r * Math.tan(halfRad) - 8 });
+      }
     });
     catNodes.push(g);
 

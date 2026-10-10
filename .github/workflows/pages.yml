@@ -29,7 +29,7 @@ jobs:
         run: |
           mkdir _site
           cp index.html style.css app.js data.js .nojekyll _site/
-          cp -r izmir _site/
+          cp -r izmir ankara _site/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
